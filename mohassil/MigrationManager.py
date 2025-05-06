@@ -44,12 +44,22 @@ class MigrationManager:
             raise ValueError("Invalid migration index. Please select a valid option.")
 
 def run_script():
+    import os
+    
     logger = setup_logger()
     logger.info("=== DATABASE MIGRATION TOOL STARTED ===")
     print("\n=== DATABASE MIGRATION TOOL ===")
 
+    # Get the directory where the script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Create the full path to the mappings.csv file
+    mappings_file = os.path.join(script_dir, "mappings.csv")
+    
+    logger.info(f"Loading migrations from: {mappings_file}")
+    
     # Load migrations from the CSV file
-    manager = MigrationManager(".mapping.csv")
+    manager = MigrationManager(mappings_file)
     logic_processor = CustomLogic()
     logic_processor.logger = logger
 
