@@ -49,7 +49,7 @@ def run_script():
     print("\n=== DATABASE MIGRATION TOOL ===")
 
     # Load migrations from the CSV file
-    manager = MigrationManager("mappings.csv")
+    manager = MigrationManager(".mapping.csv")
     logic_processor = CustomLogic()
     logic_processor.logger = logger
 

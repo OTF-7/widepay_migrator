@@ -25,5 +25,5 @@ var/
 *.egg
 
 # IDE
-.idea
-.vscode
+/.idea
+/.vscode
