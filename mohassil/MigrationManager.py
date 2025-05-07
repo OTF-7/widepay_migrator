@@ -3,6 +3,11 @@ from custom_helper import *
 import datetime
 from CustomLogic import CustomLogic
 from logger_setup import setup_logger
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 class MigrationManager:
     def __init__(self, config_file):
@@ -71,7 +76,21 @@ def run_script():
     src_conn = None
     src_ssh_tunnel = None
     while src_conn is None:
-        src_conn_details = get_db_connection_details("Enter source database connection details:")
+        # Use environment variables with correct names from .env
+        src_conn_details = {
+            "db_type": os.getenv('SOURCE_DB_TYPE'),
+            "host": os.getenv('SOURCE_HOST'),
+            "user": os.getenv('SOURCE_USER'),
+            "password": os.getenv('SOURCE_PASSWORD'),
+            "database": os.getenv('SOURCE_DATABASE'),
+            "ssh_host": os.getenv('SOURCE_SSH_HOST') if os.getenv('SOURCE_USE_SSH') == 'y' else None,
+            "ssh_user": os.getenv('SOURCE_SSH_USER') if os.getenv('SOURCE_USE_SSH') == 'y' else None,
+            "ssh_password": os.getenv('SOURCE_SSH_PASSWORD') if os.getenv('SOURCE_USE_SSH') == 'y' else None
+        }
+        
+        print(f"Connecting to source database: {src_conn_details['database']} ({src_conn_details['db_type']})")
+        logger.info(f"Connecting to source database: {src_conn_details['database']} ({src_conn_details['db_type']})")
+        
         connection_result = test_connection(src_conn_details)
         if connection_result is None:
             logger.warning("Source database connection failed")
@@ -88,7 +107,21 @@ def run_script():
     dest_conn = None
     dest_ssh_tunnel = None
     while dest_conn is None:
-        dest_conn_details = get_db_connection_details("Enter target database connection details:")
+        # Use environment variables with correct names from .env
+        dest_conn_details = {
+            "db_type": os.getenv('DEST_DB_TYPE'),
+            "host": os.getenv('DEST_HOST'),
+            "user": os.getenv('DEST_USER'),
+            "password": os.getenv('DEST_PASSWORD'),
+            "database": os.getenv('DEST_DATABASE'),
+            "ssh_host": os.getenv('DEST_SSH_HOST') if os.getenv('DEST_USE_SSH') == 'y' else None,
+            "ssh_user": os.getenv('DEST_SSH_USER') if os.getenv('DEST_USE_SSH') == 'y' else None,
+            "ssh_password": os.getenv('DEST_SSH_PASSWORD') if os.getenv('DEST_USE_SSH') == 'y' else None
+        }
+        
+        print(f"Connecting to target database: {dest_conn_details['database']} ({dest_conn_details['db_type']})")
+        logger.info(f"Connecting to target database: {dest_conn_details['database']} ({dest_conn_details['db_type']})")
+        
         connection_result = test_connection(dest_conn_details)
         if connection_result is None:
             logger.warning("Target database connection failed")
