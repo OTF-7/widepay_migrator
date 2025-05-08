@@ -473,7 +473,7 @@ def run_script():
                         if migration_name == "clients" and last_inserted_id:
                             migration_logger.debug(f"Creating profiles for client ID {last_inserted_id}")
                             if "national_id" in processed_row:
-                                client_columns = ['bus_add_1', 'bus_add_2', 'bus_add_3', 'bus_name', 'id_date']
+                                client_columns = ['bus_add_1', 'bus_add_2', 'bus_add_3', 'bus_name', 'id_date', 'com_reg', 'tax_reg']
 
                                 client_details = get_record_details_by_id(
                                     src_cursor, 
@@ -495,35 +495,45 @@ def run_script():
                                         datetime.datetime.min.time()
                                     )
                                 
-                                national_profile_data = {
-                                    "document_type_id": 1,
-                                    "document_id": processed_row["national_id"],
-                                    "document_issued_at": document_issued_at,
-                                    "document_expires_at": document_expires_at,
-                                    "profileable_type": "App\\Models\\Client",
-                                    "profileable_id": last_inserted_id
-                                }
-                                insert_record(cursor_dest, "profiles", national_profile_data)
-
-                                # Prepare business address and career for commercial profile
-                                bus_address_parts = [
-                                    client_details.get('bus_add_1', ''),
-                                    client_details.get('bus_add_2', ''),
-                                    client_details.get('bus_add_3', '')
+                                # Define profiles to create
+                                profiles_to_create = [
+                                    {
+                                        "document_type_id": 1,
+                                        "document_id": processed_row["national_id"],
+                                        "document_issued_at": document_issued_at,
+                                        "document_expires_at": document_expires_at,
+                                        "profileable_type": "App\\Models\\Client",
+                                        "profileable_id": last_inserted_id
+                                    },
+                                    {
+                                        "document_type_id": 2,
+                                        "document_id": client_details.get('com_reg'),
+                                        "career": client_details.get('bus_name', ''),
+                                        "employer_address": ", ".join([part for part in [
+                                            client_details.get('bus_add_1', ''),
+                                            client_details.get('bus_add_2', ''),
+                                            client_details.get('bus_add_3', '')
+                                        ] if part and str(part).strip()]) or None,
+                                        "profileable_type": "App\\Models\\Client",
+                                        "profileable_id": last_inserted_id
+                                    }
                                 ]
-                                bus_address_parts = [part for part in bus_address_parts if part and str(part).strip()]
-                                business_address = ", ".join(bus_address_parts) if bus_address_parts else None
-                                career = client_details.get('bus_name', '')
-
-                                # Insert commercial ID profile
-                                commercial_profile_data = {
-                                    "document_type_id": 2,
-                                    "career": career,
-                                    "employer_address": business_address,
-                                    "profileable_type": "App\\Models\\Client",
-                                    "profileable_id": last_inserted_id
-                                }
-                                insert_record(cursor_dest, "profiles", commercial_profile_data)
+                                
+                                # Add tax profile if tax_reg exists
+                                if client_details.get('tax_reg'):
+                                    profiles_to_create.append({
+                                        "document_type_id": 3,
+                                        "document_id": client_details.get('tax_reg'),
+                                        "profileable_type": "App\\Models\\Client",
+                                        "profileable_id": last_inserted_id
+                                    })
+                                
+                                # Create all profiles in a loop
+                                for profile_data in profiles_to_create:
+                                    if profile_data.get("document_id"):
+                                        insert_record(cursor_dest, "profiles", profile_data)
+                                        profile_type = {1: "national ID", 2: "commercial ID", 3: "tax ID"}.get(profile_data["document_type_id"], "unknown")
+                                        migration_logger.debug(f"Created {profile_type} profile for client ID {last_inserted_id}")
                                 
                                 # Insert location data if latitude and longitude are available
                                 if "latitude" in processed_row and "longitude" in processed_row:
