@@ -473,9 +473,33 @@ def run_script():
                         if migration_name == "clients" and last_inserted_id:
                             migration_logger.debug(f"Creating profiles for client ID {last_inserted_id}")
                             if "national_id" in processed_row:
+                                client_columns = ['bus_add_1', 'bus_add_2', 'bus_add_3', 'bus_name', 'id_date']
+
+                                client_details = get_record_details_by_id(
+                                    src_cursor, 
+                                    "ilts.c1_client_info_table", 
+                                    source_row.get('client_key'),
+                                    client_columns, 
+                                    logger=migration_logger, 
+                                    id_name='client_key'
+                                )
+                                # Get document_issued_at date and calculate expiry date (8 years later)
+                                document_issued_at = client_details.get('id_date', '')
+                                document_expires_at = None
+                                
+                                if document_issued_at and isinstance(document_issued_at, datetime.datetime):
+                                    document_expires_at = document_issued_at.replace(year=document_issued_at.year + 8)
+                                elif document_issued_at and isinstance(document_issued_at, datetime.date):
+                                    document_expires_at = datetime.datetime.combine(
+                                        document_issued_at.replace(year=document_issued_at.year + 8),
+                                        datetime.datetime.min.time()
+                                    )
+                                
                                 national_profile_data = {
                                     "document_type_id": 1,
                                     "document_id": processed_row["national_id"],
+                                    "document_issued_at": document_issued_at,
+                                    "document_expires_at": document_expires_at,
                                     "profileable_type": "App\\Models\\Client",
                                     "profileable_id": last_inserted_id
                                 }
@@ -483,13 +507,13 @@ def run_script():
 
                                 # Prepare business address and career for commercial profile
                                 bus_address_parts = [
-                                    source_row.get('bus_add_1', ''),
-                                    source_row.get('bus_add_2', ''),
-                                    source_row.get('bus_add_3', '')
+                                    client_details.get('bus_add_1', ''),
+                                    client_details.get('bus_add_2', ''),
+                                    client_details.get('bus_add_3', '')
                                 ]
                                 bus_address_parts = [part for part in bus_address_parts if part and str(part).strip()]
                                 business_address = ", ".join(bus_address_parts) if bus_address_parts else None
-                                career = source_row.get('bus_name', '')
+                                career = client_details.get('bus_name', '')
 
                                 # Insert commercial ID profile
                                 commercial_profile_data = {

@@ -8,11 +8,13 @@ branches,ilts.c0_branch_info_table,vill_code,branches,village_id
 officers,ilts.c1_officer_info_table,officer_name,users,name
 officers,ilts.c1_officer_info_table,officer_key,users,external_id
 officers,ilts.c1_officer_info_table,branch_code,users,branch_id
+officers,ilts.c1_officer_info_table,org_branch_code,users,old_branch_code
 officers,ilts.c1_officer_info_table,officer_gender,users,gender
 officers,ilts.c1_officer_info_table,officer_emp_date,users,created_at
 officers,ilts.c1_officer_info_table,employee_code,users,employee_id
 clients,ilts.c1_client_info_table,client_key,clients,external_id
 clients,ilts.c1_client_info_table,branch_code,clients,branch_id
+clients,ilts.c1_client_info_table,org_branch_code,clients,old_branch_code
 clients,ilts.c1_client_info_table,client_name,clients,name
 clients,ilts.c1_client_info_table,intro_date,clients,created_at
 clients,ilts.c1_client_info_table,intro_date,clients,approved_at
@@ -50,6 +52,7 @@ loan_products,ilts.c1_loan_types,calc_type,loan_products,loan_transaction_proces
 loan_applications,ilts.c1_loan_application,client_key,loan_applications,client_id
 loan_applications,ilts.c1_loan_application,application_key,loan_applications,external_id
 loan_applications,ilts.c1_loan_application,branch_code,loan_applications,branch_id
+loan_applications,ilts.c1_loan_application,org_branch_code,loan_applications,old_branch_code
 loan_applications,ilts.c1_loan_application,req_am,loan_applications,amount
 loan_applications,ilts.c1_loan_application,officer_key,loan_applications,loan_officer_id
 loan_applications,ilts.c1_loan_application,application_status,loan_applications,status
@@ -60,6 +63,7 @@ loan_applications,ilts.c1_loan_application,req_no,loan_applications,term
 loans,ilts.c1_loan_info,client_key,loans,client_id
 loans,ilts.c1_loan_info,loan_key,loans,external_id
 loans,ilts.c1_loan_info,branch_code,loans,branch_id
+loans,ilts.c1_loan_info,org_branch_code,loans,old_branch_code
 loans,ilts.c1_loan_info,application_key,loans,application_id
 loans,ilts.c1_loan_info,loan_am,loans,principal
 loans,ilts.c1_loan_info,loan_am,loans,approved_amount
@@ -93,7 +97,10 @@ installments,ilts.c1_installment_info,inst_mat_date,loan_repayment_schedules,due
 installments,ilts.c1_installment_info,inst_paid_total,loan_repayment_schedules,principal_repaid_derived
 installments,ilts.c1_installment_info,inst_paid_int,loan_repayment_schedules,interest_repaid_derived
 installments,ilts.c1_installment_info,inst_status_date,loan_repayment_schedules,paid_by_date
+installments,ilts.c1_installment_info,inst_cond,loan_repayment_schedules,status
+installments,ilts.c1_installment_info,inst_status,loan_repayment_schedules,status
 transactions,ilts.c1_transactions,branch_code,loan_transactions,branch_id
+transactions,ilts.c1_transactions,org_branch_code,loan_transactions,old_branch_code
 transactions,ilts.c1_transactions,trans_code,loan_transactions,external_id
 transactions,ilts.c1_transactions,loan_key,loan_transactions,loan_id
 transactions,ilts.c1_transactions,officer_key,loan_transactions,loan_officer_id

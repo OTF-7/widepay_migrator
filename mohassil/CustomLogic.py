@@ -53,6 +53,22 @@ class CustomLogic:
                 else:
                     self.logger.warning(f"Branch not found for code: {source_row['branch_code']}")
             
+            if source_row.get("org_branch_code") and migration_name in ["officers", "clients", "loans", "transactions"]:
+                self.logger.debug(f"Looking up original branch with code: {source_row['org_branch_code']}")
+                org_branch_id = get_record_value(
+                    table="branches", 
+                    condition=f"external_id = '{source_row['org_branch_code']}'",
+                    column="id",
+                    cursor=cursor,
+                    conn=self.dest_conn,
+                    logger=self.logger
+                )
+                if org_branch_id:
+                    self.logger.debug(f"Found original branch_id: {org_branch_id}")
+                    row_data["old_branch_code"] = org_branch_id
+                else:
+                    self.logger.warning(f"Original branch not found for code: {source_row['org_branch_code']}")
+
             # Client lookup
             if source_row.get("client_key") and migration_name in ["loan_applications", "loans"]:
                 self.logger.debug(f"Looking up client with key: {source_row['client_key']}")
@@ -189,6 +205,7 @@ class CustomLogic:
                 row_data["approved_longitude"] = 0.00000000
             
             # default values
+            row_data["corporate_id"] = 0
             row_data["country_id"] = 63
             row_data["display_name"] = row_data['name']
             row_data["third_name"] = ''
@@ -526,8 +543,34 @@ class CustomLogic:
 
             principal = float(row_data['principal'])
             principal_repaid_derived = float(row_data['principal_repaid_derived'])
-            if principal > principal_repaid_derived:
-                row_data['paid_by_date'] = None
+            
+            # Determine status based on inst_cond and inst_status
+            if source_row and 'inst_cond' in source_row:
+                if source_row['inst_cond'] == 2:
+                    row_data['status'] = 'written_off'
+                    self.logger.info(f"Setting installment status to written_off based on inst_cond={source_row['inst_cond']}")
+                else:  # inst_cond is 0 (normal)
+                    if source_row.get('inst_status') == 8:
+                        row_data['status'] = 'rescheduled'
+                        self.logger.info(f"Setting installment status to rescheduled based on inst_status={source_row['inst_status']}")
+                    else:
+                        # Determine if active or closed based on payment status
+                        if principal > principal_repaid_derived:
+                            row_data['status'] = 'active'
+                            row_data['paid_by_date'] = None
+                            self.logger.info(f"Setting installment status to active (principal={principal}, paid={principal_repaid_derived})")
+                        else:
+                            row_data['status'] = 'closed'
+                            self.logger.info(f"Setting installment status to closed (principal={principal}, paid={principal_repaid_derived})")
+            else:
+                # Fallback if inst_cond is not available
+                if principal > principal_repaid_derived:
+                    row_data['status'] = 'active'
+                    row_data['paid_by_date'] = None
+                    self.logger.info("Setting installment status to active (fallback)")
+                else:
+                    row_data['status'] = 'closed'
+                    self.logger.info("Setting installment status to closed (fallback)")
 
             interest = float(row_data['interest'])
             interest_repaid_derived = float(row_data['interest_repaid_derived'])
@@ -537,6 +580,8 @@ class CustomLogic:
             row_data['interest_repaid_derived'] = interest_repaid_derived
             row_data['principal'] = principal
             row_data['principal_repaid_derived'] = principal_repaid_derived
+
+            
 
             if source_row and source_row.get("loan_key"):
                 loan_id = get_record_value(
@@ -598,6 +643,10 @@ class CustomLogic:
                     
                 # Handle datetime fields properly to avoid insertion errors
                 row_data['updated_at'] = datetime.datetime.now()
+                
+                # Increase created_at by one hour if it's a datetime
+                if 'created_at' in row_data and isinstance(row_data['created_at'], datetime.datetime):
+                    row_data['created_at'] = row_data['created_at'] + datetime.timedelta(hours=1)
                 
                 # Set submitted_on to created_at if not already set
                 if 'submitted_on' not in row_data or row_data['submitted_on'] is None:

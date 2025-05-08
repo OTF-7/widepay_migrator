@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="307db7bd-a2f5-4c52-aa3e-7c3fdf644f5a" name="Changes" comment="" />
+    <list default="true" id="307db7bd-a2f5-4c52-aa3e-7c3fdf644f5a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mohassil/CustomLogic.py" beforeDir="false" afterPath="$PROJECT_DIR$/mohassil/CustomLogic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mohassil/mappings.csv" beforeDir="false" afterPath="$PROJECT_DIR$/mohassil/mappings.csv" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,12 +30,12 @@
     &quot;assignee&quot;: &quot;OTF-7&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/widespace-ye/widepay_migrator.git&quot;,
-    &quot;accountId&quot;: &quot;cb06c231-023d-4f76-8b9f-0e19367b929b&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/OTF-7/widepay_migrator.git",
+    "accountId": "c8626627-1a55-476d-8f5c-d202797cf483"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
 }</component>
@@ -60,6 +64,13 @@
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
     "vue.rearranger.settings.migration": "true"
+  },
+  "keyToStringList": {
+    "GitStage.ChangesTree.GroupingKeys": [
+      "directory",
+      "module",
+      "repository"
+    ]
   }
 }]]></component>
   <component name="RecentsManager">
@@ -100,6 +111,7 @@
       <workItem from="1745912820603" duration="10574000" />
       <workItem from="1746252345112" duration="29743000" />
       <workItem from="1746460662125" duration="3243000" />
+      <workItem from="1746627838385" duration="1040000" />
     </task>
     <task id="LOCAL-00001" summary="remove logs">
       <option name="closed" value="true" />
@@ -133,7 +145,15 @@
       <option name="project" value="LOCAL" />
       <updated>1746544507079</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Fix loading environment problem">
+      <option name="closed" value="true" />
+      <created>1746596266755</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1746596266755</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -144,7 +164,8 @@
     <MESSAGE value="Initial commit" />
     <MESSAGE value="Ignore ide config files" />
     <MESSAGE value="Change path of mappings" />
-    <option name="LAST_COMMIT_MESSAGE" value="Change path of mappings" />
+    <MESSAGE value="Fix loading environment problem" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix loading environment problem" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/widepay_migrator$users.coverage" NAME="users Coverage Results" MODIFIED="1746460595194" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
