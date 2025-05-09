@@ -160,6 +160,32 @@ def run_script():
         elif choice == str(transactions_option):  # Settle Transactions
             try:
                 logger.info("Starting transaction settlement process")
+                
+                # Check if connection is still alive and reconnect if needed
+                if not is_connection_alive(dest_conn):
+                    logger.warning("Destination database connection lost, attempting to reconnect")
+                    print("Database connection lost, attempting to reconnect...")
+                    connection_result = test_connection(dest_conn_details)
+                    if connection_result is None:
+                        logger.error("Failed to reconnect to destination database")
+                        print("Failed to reconnect to destination database. Please try again.")
+                        continue
+                    dest_conn, dest_ssh_tunnel = connection_result
+                    logger.info("Successfully reconnected to destination database")
+                    print("Successfully reconnected to destination database")
+                
+                if not is_connection_alive(src_conn):
+                    logger.warning("Source database connection lost, attempting to reconnect")
+                    print("Source database connection lost, attempting to reconnect...")
+                    connection_result = test_connection(src_conn_details)
+                    if connection_result is None:
+                        logger.error("Failed to reconnect to source database")
+                        print("Failed to reconnect to source database. Please try again.")
+                        continue
+                    src_conn, src_ssh_tunnel = connection_result
+                    logger.info("Successfully reconnected to source database")
+                    print("Successfully reconnected to source database")
+                
                 cursor_dest = dest_conn.cursor()
                 cursor_dest.execute("START TRANSACTION")
                 settle_transactions(dest_conn, src_conn, logger)
@@ -170,12 +196,41 @@ def run_script():
             except Exception as e:
                 error_msg = f"Error during transaction settlement: {str(e)}"
                 logger.error(error_msg)
-                dest_conn.rollback()
+                try:
+                    dest_conn.rollback()
+                except Exception as rollback_error:
+                    logger.error(f"Error during rollback: {str(rollback_error)}")
                 print(error_msg)
             continue
         elif choice == str(installments_option):  # Settle Installments
             try:
                 logger.info("Starting installment settlement process")
+                
+                # Check if connection is still alive and reconnect if needed
+                if not is_connection_alive(dest_conn):
+                    logger.warning("Destination database connection lost, attempting to reconnect")
+                    print("Database connection lost, attempting to reconnect...")
+                    connection_result = test_connection(dest_conn_details)
+                    if connection_result is None:
+                        logger.error("Failed to reconnect to destination database")
+                        print("Failed to reconnect to destination database. Please try again.")
+                        continue
+                    dest_conn, dest_ssh_tunnel = connection_result
+                    logger.info("Successfully reconnected to destination database")
+                    print("Successfully reconnected to destination database")
+                
+                if not is_connection_alive(src_conn):
+                    logger.warning("Source database connection lost, attempting to reconnect")
+                    print("Source database connection lost, attempting to reconnect...")
+                    connection_result = test_connection(src_conn_details)
+                    if connection_result is None:
+                        logger.error("Failed to reconnect to source database")
+                        print("Failed to reconnect to source database. Please try again.")
+                        continue
+                    src_conn, src_ssh_tunnel = connection_result
+                    logger.info("Successfully reconnected to source database")
+                    print("Successfully reconnected to source database")
+                
                 cursor_dest = dest_conn.cursor()
                 cursor_dest.execute("START TRANSACTION")
                 settle_installments(dest_conn, src_conn, logger)
@@ -186,7 +241,10 @@ def run_script():
             except Exception as e:
                 error_msg = f"Error during installment settlement: {str(e)}"
                 logger.error(error_msg)
-                dest_conn.rollback()
+                try:
+                    dest_conn.rollback()
+                except Exception as rollback_error:
+                    logger.error(f"Error during rollback: {str(rollback_error)}")
                 print(error_msg)
             continue
 

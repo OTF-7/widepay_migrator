@@ -428,12 +428,13 @@ def handle_early_settlement(conn, loan_id, logger=None):
         SET 
             principal_repaid_derived = principal,
             interest_waived_derived = interest,
-            paid_by_date = %s
+            paid_by_date = %s,
+            status = 'payoff'
         WHERE loan_id = %s AND id >= %s
         """
         cursor.execute(update_all_installments_query, (settlement_paid_by_date, loan_id, unpaid_installment_id))
         
-        message = f"Updated all installments for loan ID {loan_id} with principal_repaid_derived, interest_waived_derived, and paid_by_date"
+        message = f"Updated all installments for loan ID {loan_id} with principal_repaid_derived, interest_waived_derived, paid_by_date, and status='payoff'"
         if logger:
             logger.info(message)
         print(f"  {message}")

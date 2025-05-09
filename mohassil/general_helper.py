@@ -375,3 +375,23 @@ def perform_cleanup(conn, table_name, condition=""):
         raise  # Re-raise the exception to be caught by the caller
     finally:
         cursor.close()
+
+
+def is_connection_alive(conn):
+    """
+    Check if a database connection is still alive.
+    
+    Args:
+        conn: Database connection to check
+        
+    Returns:
+        bool: True if connection is alive, False otherwise
+    """
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        cursor.fetchone()
+        cursor.close()
+        return True
+    except Exception:
+        return False
