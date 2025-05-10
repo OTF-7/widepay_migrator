@@ -316,12 +316,13 @@ def handle_early_settlement(conn, loan_id, logger=None):
         if logger:
             logger.debug(message)
         
+        # Modified query to order by installment number instead of due_date
         query = """
         SELECT lrs.id, lrs.principal, lrs.interest, lrs.paid_by_date, l.branch_id, l.loan_officer_id
         FROM loan_repayment_schedules lrs
         JOIN loans l ON lrs.loan_id = l.id
         WHERE lrs.loan_id = %s 
-        ORDER BY lrs.due_date DESC, lrs.id DESC 
+        ORDER BY lrs.installment DESC, lrs.id DESC 
         LIMIT 1
         """
         cursor.execute(query, (loan_id,))
@@ -356,12 +357,12 @@ def handle_early_settlement(conn, loan_id, logger=None):
             logger.info(message)
         print(f"  {message}")
         
-        # Find the first unpaid installment
+        # Find the first unpaid installment - modified to order by installment
         unpaid_query = """
         SELECT id 
         FROM loan_repayment_schedules 
         WHERE loan_id = %s AND paid_by_date IS NULL
-        ORDER BY due_date ASC
+        ORDER BY installment ASC
         LIMIT 1
         """
         cursor.execute(unpaid_query, (loan_id,))

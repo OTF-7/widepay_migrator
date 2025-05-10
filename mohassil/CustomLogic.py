@@ -581,8 +581,6 @@ class CustomLogic:
             row_data['principal'] = principal
             row_data['principal_repaid_derived'] = principal_repaid_derived
 
-            
-
             if source_row and source_row.get("loan_key"):
                 loan_id = get_record_value(
                     table="loans", 
@@ -608,6 +606,22 @@ class CustomLogic:
                     )
                     if loan_id:
                         row_data["loan_id"] = loan_id
+                        
+                        # Check if the loan status is withdrawn or rejected
+                        loan_status = get_record_value(
+                            table="loans", 
+                            condition=f"id = {loan_id}",
+                            column="status",
+                            cursor=cursor,
+                            conn=self.dest_conn,
+                            logger=self.logger
+                        )
+                        
+                        if loan_status in ["withdrawn", "rejected"]:
+                            row_data["reversed"] = True
+                            self.logger.info(f"Setting transaction as reversed because loan (ID: {loan_id}) has status: {loan_status}")
+                        else:
+                            row_data["reversed"] = False
 
                 if source_row.get("installment_key"):
                     repayment_schedule_id = get_record_value(
