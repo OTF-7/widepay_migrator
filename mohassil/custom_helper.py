@@ -314,15 +314,14 @@ def handle_early_settlement(conn, loan_id, logger=None):
         # Find the settlement installment (the last one)
         message = f"Finding settlement installment for loan ID {loan_id}..."
         if logger:
-            logger.debug(message)
+            logger.info(message)
         
-        # Modified query to order by installment number instead of due_date
         query = """
         SELECT lrs.id, lrs.principal, lrs.interest, lrs.paid_by_date, l.branch_id, l.loan_officer_id
         FROM loan_repayment_schedules lrs
         JOIN loans l ON lrs.loan_id = l.id
         WHERE lrs.loan_id = %s 
-        ORDER BY lrs.installment DESC, lrs.id DESC 
+        ORDER BY lrs.installment DESC 
         LIMIT 1
         """
         cursor.execute(query, (loan_id,))
@@ -344,7 +343,7 @@ def handle_early_settlement(conn, loan_id, logger=None):
         
         message = f"Found settlement installment ID {settlement_id} with principal={settlement_principal}, early settlement fee={settlement_fee}"
         if logger:
-            logger.debug(message)
+            logger.info(message)
         print(f"  {message}")
         
         # Delete any transactions related to the settlement installment
@@ -357,11 +356,16 @@ def handle_early_settlement(conn, loan_id, logger=None):
             logger.info(message)
         print(f"  {message}")
         
-        # Find the first unpaid installment - modified to order by installment
+        # Find the first unpaid installment
         unpaid_query = """
         SELECT id 
         FROM loan_repayment_schedules 
-        WHERE loan_id = %s AND paid_by_date IS NULL
+        WHERE loan_id = %s AND (
+            (COALESCE(principal, 0) + COALESCE(interest, 0) + COALESCE(fees, 0) + COALESCE(penalties, 0)) - 
+            (COALESCE(principal_repaid_derived, 0) + COALESCE(interest_repaid_derived, 0) + COALESCE(fees_repaid_derived, 0) + COALESCE(penalties_repaid_derived, 0)) -
+            (COALESCE(principal_written_off_derived, 0) + COALESCE(interest_written_off_derived, 0) + COALESCE(fees_written_off_derived, 0) + COALESCE(penalties_written_off_derived, 0)) -
+            (COALESCE(interest_waived_derived, 0) + COALESCE(fees_waived_derived, 0) + COALESCE(penalties_waived_derived, 0))
+        ) > 0
         ORDER BY installment ASC
         LIMIT 1
         """
