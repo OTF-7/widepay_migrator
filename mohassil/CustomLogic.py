@@ -53,7 +53,7 @@ class CustomLogic:
                 else:
                     self.logger.warning(f"Branch not found for code: {source_row['branch_code']}")
             
-            if source_row.get("org_branch_code") and migration_name in ["officers", "clients", "loans", "transactions"]:
+            if source_row.get("org_branch_code") and migration_name in ["clients", "loans", "transactions"]:
                 self.logger.debug(f"Looking up original branch with code: {source_row['org_branch_code']}")
                 org_branch_id = get_record_value(
                     table="branches", 

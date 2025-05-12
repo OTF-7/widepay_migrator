@@ -8,7 +8,6 @@ branches,ilts.c0_branch_info_table,vill_code,branches,village_id
 officers,ilts.c1_officer_info_table,officer_name,users,name
 officers,ilts.c1_officer_info_table,officer_key,users,external_id
 officers,ilts.c1_officer_info_table,branch_code,users,branch_id
-officers,ilts.c1_officer_info_table,org_branch_code,users,old_branch_code
 officers,ilts.c1_officer_info_table,officer_gender,users,gender
 officers,ilts.c1_officer_info_table,officer_emp_date,users,created_at
 officers,ilts.c1_officer_info_table,employee_code,users,employee_id
