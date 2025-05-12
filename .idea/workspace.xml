@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="307db7bd-a2f5-4c52-aa3e-7c3fdf644f5a" name="Changes" comment="" />
+    <list default="true" id="307db7bd-a2f5-4c52-aa3e-7c3fdf644f5a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/mohassil/CustomLogic.py" beforeDir="false" afterPath="$PROJECT_DIR$/mohassil/CustomLogic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mohassil/mappings.csv" beforeDir="false" afterPath="$PROJECT_DIR$/mohassil/mappings.csv" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

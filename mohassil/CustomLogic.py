@@ -296,7 +296,12 @@ class CustomLogic:
 
             # Loan status mapping
             loan_status = source_row.get("loan_status")
-            if loan_status == 0:
+            loan_cond = source_row.get("loan_cond")
+            
+            if loan_cond == 2 and source_row.get("closed_on_date") is not None:
+                status = 'written_off'
+                self.logger.info(f"Setting loan status to written_off based on loan_cond={loan_cond} and closed_on_date is present")
+            elif loan_status == 0:
                 status = 'submitted'
             elif loan_status == 1:
                 status = 'active'
@@ -544,11 +549,36 @@ class CustomLogic:
             principal = float(row_data['principal'])
             principal_repaid_derived = float(row_data['principal_repaid_derived'])
             
+            if source_row and source_row.get("loan_key"):
+                loan_id = get_record_value(
+                    table="loans", 
+                    condition=f"external_id = '{source_row['loan_key']}'",
+                    column="id",
+                    cursor=cursor,
+                    conn=self.dest_conn,
+                    logger=self.logger
+                )
+                if loan_id:
+                    row_data["loan_id"] = loan_id
             # Determine status based on inst_cond and inst_status
             if source_row and 'inst_cond' in source_row:
-                if source_row['inst_cond'] == 2:
+                # Get loan status if loan_key is available
+                loan_status = None
+                if row_data.get("loan_id"):
+                    loan_status = get_record_value(
+                        table="loans", 
+                        condition=f"id = '{row_data['loan_id']}'",
+                        column="status",
+                        cursor=cursor,
+                        conn=self.dest_conn,
+                        logger=self.logger
+                    )
+                    self.logger.debug(f"Found loan status: {loan_status} for loan_id: {row_data['loan_id']}")
+                
+                # Check both loan status and installment condition
+                if loan_status == 'written_off' and source_row['inst_cond'] == 2:
                     row_data['status'] = 'written_off'
-                    self.logger.info(f"Setting installment status to written_off based on inst_cond={source_row['inst_cond']}")
+                    self.logger.info(f"Setting installment status to written_off based on loan_status={loan_status} and inst_cond={source_row['inst_cond']}")
                 else:  # inst_cond is 0 (normal)
                     if source_row.get('inst_status') == 8:
                         row_data['status'] = 'rescheduled'
@@ -580,18 +610,6 @@ class CustomLogic:
             row_data['interest_repaid_derived'] = interest_repaid_derived
             row_data['principal'] = principal
             row_data['principal_repaid_derived'] = principal_repaid_derived
-
-            if source_row and source_row.get("loan_key"):
-                loan_id = get_record_value(
-                    table="loans", 
-                    condition=f"external_id = '{source_row['loan_key']}'",
-                    column="id",
-                    cursor=cursor,
-                    conn=self.dest_conn,
-                    logger=self.logger
-                )
-                if loan_id:
-                    row_data["loan_id"] = loan_id
             
         elif migration_name == "transactions":
             if source_row:

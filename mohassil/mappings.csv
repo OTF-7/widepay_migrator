@@ -70,11 +70,13 @@ loans,ilts.c1_loan_info,loan_am,loans,approved_amount
 loans,ilts.c1_loan_info,loan_int_rt,loans,flat_interest_rate
 loans,ilts.c1_loan_info,loan_int_am,loans,interest_disbursed_derived
 loans,ilts.c1_loan_info,loan_date,loans,created_at
+loans,ilts.c1_loan_info,fully_paid_date,loans,closed_on_date
 loans,ilts.c1_loan_info,loan_no,loans,loan_term
 loans,ilts.c1_loan_info,bs_div_1_code,loans,loan_activity_id
 loans,ilts.c1_loan_info,bs_div_2_code,loans,loan_activity_id
 loans,ilts.c1_loan_info,officer_key,loans,loan_officer_id
 loans,ilts.c1_loan_info,loan_penalties,loans,penalties_disbursed_derived
+loans,ilts.c1_loan_info,loan_cond,loans,status
 loans,ilts.c1_loan_info,loan_status,loans,status
 loans,ilts.c1_loan_info,currency_code,loans,currency_id
 loans,ilts.c1_loan_info,app_charge,loans,disbursement_charges
