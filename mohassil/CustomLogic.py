@@ -696,7 +696,15 @@ class CustomLogic:
                     3: 1,           # Disbursement
                     7: 6,           # Write Off
                     17: 10,         # Apply Charges
+                    # Cancellation transaction types map to the same target types
+                    2: 2,           # Cancel Repayment
+                    4: 1,           # Cancel Disbursement
+                    8: 6,           # Cancel Write Off
+                    18: 10,         # Cancel Apply Charges
                 }
+                
+                # Define which transaction types are cancellations
+                cancellation_types = {2, 4, 8, 18}
                 
                 # Get transaction type from source row
                 trans_type = source_row.get('trans_act')
@@ -729,6 +737,27 @@ class CustomLogic:
                         print(summary)
                     
                     return None  # Return None to indicate this row should be skipped
+                
+                # For cancellation transaction types, make the amount negative if it's not already
+                if trans_type in cancellation_types:
+                    # Make amount negative if it's positive
+                    if row_data['amount'] > 0:
+                        row_data['amount'] = -float(row_data['amount'])
+                        self.logger.info(f"Made amount negative for cancellation transaction type {trans_type}: {row_data['amount']}")
+                    
+                    # Make interest_repaid_derived negative if it's positive
+                    if row_data['interest_repaid_derived'] > 0:
+                        row_data['interest_repaid_derived'] = -float(row_data['interest_repaid_derived'])
+                        self.logger.info(f"Made interest_repaid_derived negative for cancellation transaction type {trans_type}: {row_data['interest_repaid_derived']}")
+                    
+                    # Make penalties_repaid_derived negative if it's positive
+                    if row_data['penalties_repaid_derived'] > 0:
+                        row_data['penalties_repaid_derived'] = -float(row_data['penalties_repaid_derived'])
+                        self.logger.info(f"Made penalties_repaid_derived negative for cancellation transaction type {trans_type}: {row_data['penalties_repaid_derived']}")
+                    
+                    # Recalculate principal_repaid_derived with negative values
+                    row_data['principal_repaid_derived'] = row_data['amount'] - row_data['interest_repaid_derived']
+                    self.logger.info(f"Recalculated principal_repaid_derived for cancellation: {row_data['principal_repaid_derived']}")
                 
                 # Count this as a transaction that will be inserted
                 self.inserted_transactions += 1
