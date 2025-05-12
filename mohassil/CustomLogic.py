@@ -641,17 +641,17 @@ class CustomLogic:
                         else:
                             row_data["reversed"] = False
 
-                if source_row.get("installment_key"):
-                    repayment_schedule_id = get_record_value(
-                        table="loan_repayment_schedules", 
-                        condition=f"external_id = '{source_row['installment_key']}'",
-                        column="id",
-                        cursor=cursor,
-                        conn=self.dest_conn,
-                        logger=self.logger
-                    )
-                    if loan_id:
-                        row_data["repayment_schedule_id"] = repayment_schedule_id
+                    if source_row.get("installment_key"):
+                        repayment_schedule_id = get_record_value(
+                            table="loan_repayment_schedules",
+                            condition=f"external_id = '{source_row['installment_key']}'",
+                            column="id",
+                            cursor=cursor,
+                            conn=self.dest_conn,
+                            logger=self.logger
+                        )
+                        if loan_id:
+                            row_data["repayment_schedule_id"] = repayment_schedule_id
                 
                 # Ensure amount, interest_repaid_derived, or penalties_repaid_derived are not null, set to 0 if they are
                 if row_data.get('amount') is None:
