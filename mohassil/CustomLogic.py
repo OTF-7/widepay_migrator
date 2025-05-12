@@ -740,24 +740,41 @@ class CustomLogic:
                 
                 # For cancellation transaction types, make the amount negative if it's not already
                 if trans_type in cancellation_types:
-                    # Make amount negative if it's positive
-                    if row_data['amount'] > 0:
-                        row_data['amount'] = -float(row_data['amount'])
-                        self.logger.info(f"Made amount negative for cancellation transaction type {trans_type}: {row_data['amount']}")
+                    # Make amount negative if it's positive - ensure it's a float first
+                    try:
+                        amount_val = float(row_data['amount'])
+                        if amount_val > 0:
+                            row_data['amount'] = -amount_val
+                            self.logger.info(f"Made amount negative for cancellation transaction type {trans_type}: {row_data['amount']}")
+                    except (ValueError, TypeError):
+                        self.logger.warning(f"Could not convert amount '{row_data['amount']}' to float for comparison")
                     
                     # Make interest_repaid_derived negative if it's positive
-                    if row_data['interest_repaid_derived'] > 0:
-                        row_data['interest_repaid_derived'] = -float(row_data['interest_repaid_derived'])
-                        self.logger.info(f"Made interest_repaid_derived negative for cancellation transaction type {trans_type}: {row_data['interest_repaid_derived']}")
+                    try:
+                        interest_val = float(row_data['interest_repaid_derived'])
+                        if interest_val > 0:
+                            row_data['interest_repaid_derived'] = -interest_val
+                            self.logger.info(f"Made interest_repaid_derived negative for cancellation transaction type {trans_type}: {row_data['interest_repaid_derived']}")
+                    except (ValueError, TypeError):
+                        self.logger.warning(f"Could not convert interest_repaid_derived '{row_data['interest_repaid_derived']}' to float for comparison")
                     
                     # Make penalties_repaid_derived negative if it's positive
-                    if row_data['penalties_repaid_derived'] > 0:
-                        row_data['penalties_repaid_derived'] = -float(row_data['penalties_repaid_derived'])
-                        self.logger.info(f"Made penalties_repaid_derived negative for cancellation transaction type {trans_type}: {row_data['penalties_repaid_derived']}")
+                    try:
+                        penalties_val = float(row_data['penalties_repaid_derived'])
+                        if penalties_val > 0:
+                            row_data['penalties_repaid_derived'] = -penalties_val
+                            self.logger.info(f"Made penalties_repaid_derived negative for cancellation transaction type {trans_type}: {row_data['penalties_repaid_derived']}")
+                    except (ValueError, TypeError):
+                        self.logger.warning(f"Could not convert penalties_repaid_derived '{row_data['penalties_repaid_derived']}' to float for comparison")
                     
                     # Recalculate principal_repaid_derived with negative values
-                    row_data['principal_repaid_derived'] = row_data['amount'] - row_data['interest_repaid_derived']
-                    self.logger.info(f"Recalculated principal_repaid_derived for cancellation: {row_data['principal_repaid_derived']}")
+                    try:
+                        amount = float(row_data['amount'])
+                        interest = float(row_data['interest_repaid_derived'])
+                        row_data['principal_repaid_derived'] = amount - interest
+                        self.logger.info(f"Recalculated principal_repaid_derived for cancellation: {row_data['principal_repaid_derived']}")
+                    except (ValueError, TypeError):
+                        self.logger.warning("Could not recalculate principal_repaid_derived due to conversion errors")
                 
                 # Count this as a transaction that will be inserted
                 self.inserted_transactions += 1
