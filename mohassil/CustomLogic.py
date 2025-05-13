@@ -298,9 +298,9 @@ class CustomLogic:
             loan_status = source_row.get("loan_status")
             loan_cond = source_row.get("loan_cond")
             
-            if loan_cond == 2 and source_row.get("closed_on_date") is not None:
+            if loan_cond == 2 and source_row.get("fully_paid_date") is not None:
                 status = 'written_off'
-                self.logger.info(f"Setting loan status to written_off based on loan_cond={loan_cond} and closed_on_date is present")
+                self.logger.info(f"Setting loan status to written_off based on loan_cond={loan_cond} and fully_paid_date is present")
             elif loan_status == 0:
                 status = 'submitted'
             elif loan_status == 1:
