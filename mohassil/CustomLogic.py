@@ -663,6 +663,73 @@ class CustomLogic:
                 if row_data.get('penalties_repaid_derived') is None:
                     row_data['penalties_repaid_derived'] = 0
                 
+                # Create a separate transaction for penalties if penalties_repaid_derived is greater than zero
+                penalties_amount = float(row_data.get('penalties_repaid_derived', 0))
+                if penalties_amount > 0 and 'loan_id' in row_data:
+                    self.logger.info(f"Creating separate penalties transaction with amount: {penalties_amount}")
+                    
+                    # Determine if this is a cancellation transaction
+                    is_cancellation = trans_type_int in cancellation_types if trans_type_int is not None else False
+                    
+                    # Calculate adjusted amount based on cancellation status
+                    adjusted_penalties_amount = -penalties_amount if is_cancellation else penalties_amount
+                    
+                    # Create transaction data for penalties
+                    penalties_tx_data = {
+                        "loan_id": row_data['loan_id'],
+                        "amount": adjusted_penalties_amount,
+                        "debit": adjusted_penalties_amount,
+                        "penalties_repaid_derived": adjusted_penalties_amount,
+                        "loan_transaction_type_id": 12,
+                        "created_at": row_data.get('created_at', datetime.datetime.now()),
+                        "updated_at": datetime.datetime.now(),
+                        "submitted_on": row_data.get('submitted_on', datetime.datetime.now()),
+                        "branch_id": row_data.get('branch_id'),
+                        "loan_officer_id": row_data.get('loan_officer_id'),
+                        "description": "Apply Penalty" if not is_cancellation else "Cancel Apply Penalty"
+                    }
+                    
+                    # Insert the penalties transaction
+                    try:
+                        insert_record(cursor, "loan_transactions", penalties_tx_data, self.logger)
+                        self.logger.info(f"Successfully created penalties transaction for loan ID {row_data['loan_id']} with amount {penalties_tx_data['amount']}")
+                    except Exception as e:
+                        self.logger.error(f"Failed to create penalties transaction: {str(e)}")
+                
+                # Create a separate transaction for apply charges if transaction type is 10 (Apply Charges)
+                if trans_type_int in [17, 18] and 'loan_id' in row_data:  # Apply Charges or Cancel Apply Charges
+                    fees_amount = float(row_data.get('amount', 0))
+                    if fees_amount > 0:
+                        self.logger.info(f"Creating separate apply charges transaction with amount: {fees_amount}")
+                        
+                        # Determine if this is a cancellation transaction (type 18)
+                        is_cancellation = trans_type_int == 18
+                        
+                        # Calculate adjusted amount based on cancellation status
+                        adjusted_fees_amount = -fees_amount if is_cancellation else fees_amount
+                        
+                        # Create transaction data for apply charges
+                        fees_tx_data = {
+                            "loan_id": row_data['loan_id'],
+                            "amount": adjusted_fees_amount,
+                            "credit": adjusted_fees_amount,
+                            "fees_repaid_derived": adjusted_fees_amount,
+                            "loan_transaction_type_id": 2,
+                            "created_at": row_data.get('created_at', datetime.datetime.now()),
+                            "updated_at": datetime.datetime.now(),
+                            "submitted_on": row_data.get('submitted_on', datetime.datetime.now()),
+                            "branch_id": row_data.get('branch_id'),
+                            "loan_officer_id": row_data.get('loan_officer_id'),
+                            "description": "Pay Charges" if not is_cancellation else "Cancel Pay Charges"
+                        }
+                        
+                        # Insert the fees transaction
+                        try:
+                            insert_record(cursor, "loan_transactions", fees_tx_data, self.logger)
+                            self.logger.info(f"Successfully created apply charges transaction for loan ID {row_data['loan_id']} with amount {fees_amount}")
+                        except Exception as e:
+                            self.logger.error(f"Failed to create apply charges transaction: {str(e)}")
+                
                 # Convert negative values to positive
                 for field in ['amount', 'interest_repaid_derived', 'penalties_repaid_derived']:
                     if field in row_data and row_data[field] is not None:
@@ -672,7 +739,7 @@ class CustomLogic:
                         if value < 0:
                             row_data[field] = abs(value)
                             self.logger.info(f"Converted negative {field} to positive: {abs(value)}")
-                    
+
                 # Handle datetime fields properly to avoid insertion errors
                 row_data['updated_at'] = datetime.datetime.now()
                 
