@@ -688,7 +688,8 @@ class CustomLogic:
                 amount = float(row_data['amount'])
                 interest_repaid = float(row_data['interest_repaid_derived'])
                 row_data['principal_repaid_derived'] = amount - interest_repaid
-                
+                row_data['amount'] = amount + float(row_data['penalties_repaid_derived'])
+
                 # Map transaction types from old to new system
                 # Only process transactions with types that have a mapping
                 trans_type_mapping = {
