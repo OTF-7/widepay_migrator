@@ -355,7 +355,7 @@ def run_script():
                                 processed_row[mapping["target_column"]] = None
 
                         # Apply custom logic with both source and target data
-                        logic_processor.process_columns(
+                        processed_row = logic_processor.process_columns(
                             migration_name, 
                             processed_row, 
                             source_row=source_row, 
@@ -366,6 +366,14 @@ def run_script():
                         # Skip this record if processed_row is None (e.g., transaction type not mapped)
                         if processed_row is None:
                             migration_logger.debug(f"Skipping record {i+1} - processing returned None")
+                            continue
+                        
+                        # Check if the row has a skip flag
+                        if processed_row.get("_skip_this_row", False):
+                            migration_logger.debug(f"Skipping record {i+1} - marked for skipping by custom logic")
+                            # Remove the skip flag from the dictionary to avoid DB errors
+                            if "_skip_this_row" in processed_row:
+                                del processed_row["_skip_this_row"]
                             continue
                         
                         # Extract charge data if present (before main insert)

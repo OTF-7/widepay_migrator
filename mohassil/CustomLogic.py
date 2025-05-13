@@ -736,7 +736,9 @@ class CustomLogic:
                         self.logger.info(summary)
                         print(summary)
                     
-                    return None  # Return None to indicate this row should be skipped
+                    # Set a special flag to indicate this row should be skipped
+                    row_data["_skip_this_row"] = True
+                    return row_data  # Return the modified row_data with the skip flag
                 
                 # For cancellation transaction types, make the amount negative if it's not already
                 if trans_type in cancellation_types:
