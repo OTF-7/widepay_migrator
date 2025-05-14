@@ -663,6 +663,37 @@ class CustomLogic:
                 if row_data.get('penalties_repaid_derived') is None:
                     row_data['penalties_repaid_derived'] = 0
                 
+                  # Map transaction types from old to new system
+                # Only process transactions with types that have a mapping
+                trans_type_mapping = {
+                    1: 2,           # Repayment
+                    3: 1,           # Disbursement
+                    7: 6,           # Write Off
+                    17: 10,         # Apply Charges
+                    # Cancellation transaction types map to the same target types
+                    2: 2,           # Cancel Repayment
+                    4: 1,           # Cancel Disbursement
+                    8: 6,           # Cancel Write Off
+                    18: 10,         # Cancel Apply Charges
+                }
+                
+                # Define which transaction types are cancellations
+                cancellation_types = {2, 4, 8, 18}
+                
+                # Get transaction type from source row
+                trans_type = source_row.get('trans_act')
+                
+                # Add debugging to see what transaction types are being encountered
+                self.logger.info(f"Processing transaction with type: {trans_type}")
+                print(f"Processing transaction with type: {trans_type}")
+                
+                # Convert trans_type to int for dictionary lookup
+                try:
+                    trans_type_int = int(trans_type) if trans_type is not None else None
+                    trans_type = trans_type_int  # Update trans_type to the integer version
+                except (ValueError, TypeError):
+                    self.logger.warning(f"Could not convert transaction type '{trans_type}' to integer")
+                    
                 # Create a separate transaction for penalties if penalties_repaid_derived is greater than zero
                 penalties_amount = float(row_data.get('penalties_repaid_derived', 0))
                 if penalties_amount > 0 and 'loan_id' in row_data:
@@ -756,37 +787,6 @@ class CustomLogic:
                 interest_repaid = float(row_data['interest_repaid_derived'])
                 row_data['principal_repaid_derived'] = amount - interest_repaid
                 row_data['amount'] = amount + float(row_data['penalties_repaid_derived'])
-
-                # Map transaction types from old to new system
-                # Only process transactions with types that have a mapping
-                trans_type_mapping = {
-                    1: 2,           # Repayment
-                    3: 1,           # Disbursement
-                    7: 6,           # Write Off
-                    17: 10,         # Apply Charges
-                    # Cancellation transaction types map to the same target types
-                    2: 2,           # Cancel Repayment
-                    4: 1,           # Cancel Disbursement
-                    8: 6,           # Cancel Write Off
-                    18: 10,         # Cancel Apply Charges
-                }
-                
-                # Define which transaction types are cancellations
-                cancellation_types = {2, 4, 8, 18}
-                
-                # Get transaction type from source row
-                trans_type = source_row.get('trans_act')
-                
-                # Add debugging to see what transaction types are being encountered
-                self.logger.info(f"Processing transaction with type: {trans_type}")
-                print(f"Processing transaction with type: {trans_type}")
-                
-                # Convert trans_type to int for dictionary lookup
-                try:
-                    trans_type_int = int(trans_type) if trans_type is not None else None
-                    trans_type = trans_type_int  # Update trans_type to the integer version
-                except (ValueError, TypeError):
-                    self.logger.warning(f"Could not convert transaction type '{trans_type}' to integer")
                 
                 # Skip transactions that don't have a mapping
                 if trans_type not in trans_type_mapping:
