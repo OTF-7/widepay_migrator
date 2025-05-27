@@ -674,6 +674,10 @@ class CustomLogic:
                     self.skipped_transactions += 1
                     return row_data
                 
+                # Set submitted_on to created_at if not already set
+                if 'submitted_on' not in row_data or row_data['submitted_on'] is None:
+                    row_data['submitted_on'] = row_data.get('created_at', datetime.datetime.now())
+
                 # Map transaction types from old to new system
                 # Only process transactions with types that have a mapping
                 trans_type_mapping = {
@@ -829,22 +833,6 @@ class CustomLogic:
                 # Increase created_at by one hour if it's a datetime
                 if 'created_at' in row_data and isinstance(row_data['created_at'], datetime.datetime):
                     row_data['created_at'] = row_data['created_at'] + datetime.timedelta(hours=1)
-                
-                # Set submitted_on to created_at if not already set
-                if 'submitted_on' not in row_data or row_data['submitted_on'] is None:
-                    if 'created_at' in row_data and row_data['created_at'] is not None:
-                        # If created_at is a datetime, extract just the date part
-                        if isinstance(row_data['created_at'], datetime.datetime):
-                            row_data['submitted_on'] = row_data['created_at'].date()
-                        # If created_at is already a date, use it directly
-                        elif isinstance(row_data['created_at'], datetime.date):
-                            row_data['submitted_on'] = row_data['created_at']
-                        # Otherwise, try to use today's date
-                        else:
-                            row_data['submitted_on'] = datetime.date.today()
-                    else:
-                        # Fallback to today's date if created_at is not available
-                        row_data['submitted_on'] = datetime.date.today()
 
                 # Convert to float before calculation
                 amount = float(row_data['amount'])
