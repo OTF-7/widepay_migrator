@@ -905,8 +905,7 @@ class CustomLogic:
                 row_data['loan_transaction_type_id'] = trans_type_mapping[trans_type]
                 
                 # Set debit/credit based on transaction type
-                # Disbursement (1) and Apply Charges (10) are credits, others are debits
-                if trans_type_mapping[trans_type] in [1, 10]:
+                if trans_type_mapping[trans_type] in [1, 10, 11, 12]:
                     self.logger.debug(f"Setting transaction as credit: {row_data['amount']}")
                     row_data['debit'] = row_data['amount']
                     row_data['credit'] = 0
