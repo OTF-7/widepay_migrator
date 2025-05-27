@@ -910,13 +910,13 @@ class CustomLogic:
                     self.logger.debug(f"Setting transaction as credit: {row_data['amount']}")
                     row_data['debit'] = row_data['amount']
                     row_data['credit'] = 0
+                    row_data['interest_repaid_derived'] = 0
+                    row_data['penalties_repaid_derived'] = 0
+                    row_data['principal_repaid_derived'] = 0
                 else:
                     self.logger.debug(f"Setting transaction as debit: {row_data['amount']}")
                     row_data['debit'] = 0
                     row_data['credit'] = row_data['amount']
-                    row_data['interest_repaid_derived'] = 0
-                    row_data['penalties_repaid_derived'] = 0
-                    row_data['principal_repaid_derived'] = 0
 
 
                 # Print summary after every 100 transactions
