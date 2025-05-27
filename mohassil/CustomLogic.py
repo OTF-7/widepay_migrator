@@ -732,7 +732,7 @@ class CustomLogic:
                             "loan_transaction_type_id": 11,  # Apply Interest
                             "created_at": row_data.get('created_at', datetime.datetime.now()),
                             "updated_at": datetime.datetime.now(),
-                            "submitted_on": row_data.get('submitted_on', datetime.datetime.now()),
+                            "submitted_on": row_data.get('submitted_on', datetime.date.today()),
                             "branch_id": row_data.get('branch_id'),
                             "loan_officer_id": row_data.get('loan_officer_id'),
                             "description": "Apply Interest" if not is_cancellation else "Cancel Apply Interest",
@@ -766,7 +766,7 @@ class CustomLogic:
                         "loan_transaction_type_id": 12,
                         "created_at": row_data.get('created_at', datetime.datetime.now()),
                         "updated_at": datetime.datetime.now(),
-                        "submitted_on": row_data.get('submitted_on', datetime.datetime.now()),
+                        "submitted_on": row_data.get('submitted_on', datetime.date.today()),
                         "branch_id": row_data.get('branch_id'),
                         "loan_officer_id": row_data.get('loan_officer_id'),
                         "description": "Apply Penalty" if not is_cancellation else "Cancel Apply Penalty"
@@ -800,7 +800,7 @@ class CustomLogic:
                             "loan_transaction_type_id": 2,
                             "created_at": row_data.get('created_at', datetime.datetime.now()),
                             "updated_at": datetime.datetime.now(),
-                            "submitted_on": row_data.get('submitted_on', datetime.datetime.now()),
+                            "submitted_on": row_data.get('submitted_on', datetime.date.today()),
                             "branch_id": row_data.get('branch_id'),
                             "loan_officer_id": row_data.get('loan_officer_id'),
                             "description": "Pay Charges" if not is_cancellation else "Cancel Pay Charges"
@@ -832,7 +832,19 @@ class CustomLogic:
                 
                 # Set submitted_on to created_at if not already set
                 if 'submitted_on' not in row_data or row_data['submitted_on'] is None:
-                    row_data['submitted_on'] = row_data['created_at']
+                    if 'created_at' in row_data and row_data['created_at'] is not None:
+                        # If created_at is a datetime, extract just the date part
+                        if isinstance(row_data['created_at'], datetime.datetime):
+                            row_data['submitted_on'] = row_data['created_at'].date()
+                        # If created_at is already a date, use it directly
+                        elif isinstance(row_data['created_at'], datetime.date):
+                            row_data['submitted_on'] = row_data['created_at']
+                        # Otherwise, try to use today's date
+                        else:
+                            row_data['submitted_on'] = datetime.date.today()
+                    else:
+                        # Fallback to today's date if created_at is not available
+                        row_data['submitted_on'] = datetime.date.today()
 
                 # Convert to float before calculation
                 amount = float(row_data['amount'])
