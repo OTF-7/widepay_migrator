@@ -733,6 +733,7 @@ class CustomLogic:
                             "loan_id": row_data['loan_id'],
                             "amount": adjusted_interest_amount,
                             "debit": adjusted_interest_amount,
+                            "credit": 0,
                             "loan_transaction_type_id": 11,  # Apply Interest
                             "created_at": row_data.get('created_at', datetime.datetime.now()),
                             "updated_at": datetime.datetime.now(),
@@ -766,7 +767,7 @@ class CustomLogic:
                         "loan_id": row_data['loan_id'],
                         "amount": adjusted_penalties_amount,
                         "debit": adjusted_penalties_amount,
-                        "penalties_repaid_derived": adjusted_penalties_amount,
+                        "credit": 0,
                         "loan_transaction_type_id": 12,
                         "created_at": row_data.get('created_at', datetime.datetime.now()),
                         "updated_at": datetime.datetime.now(),
@@ -799,6 +800,7 @@ class CustomLogic:
                         fees_tx_data = {
                             "loan_id": row_data['loan_id'],
                             "amount": adjusted_fees_amount,
+                            "debit": 0,
                             "credit": adjusted_fees_amount,
                             "fees_repaid_derived": adjusted_fees_amount,
                             "loan_transaction_type_id": 2,
@@ -905,7 +907,7 @@ class CustomLogic:
                 row_data['loan_transaction_type_id'] = trans_type_mapping[trans_type]
                 
                 # Set debit/credit based on transaction type
-                if trans_type_mapping[trans_type] in [1, 10, 11, 12]:
+                if trans_type_mapping[trans_type] in [1, 10]:
                     self.logger.debug(f"Setting transaction as credit: {row_data['amount']}")
                     row_data['debit'] = row_data['amount']
                     row_data['credit'] = 0
