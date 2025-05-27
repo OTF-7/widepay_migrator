@@ -663,7 +663,18 @@ class CustomLogic:
                 if row_data.get('penalties_repaid_derived') is None:
                     row_data['penalties_repaid_derived'] = 0
                 
-                  # Map transaction types from old to new system
+                # Check if transaction has no meaningful values and should be skipped
+                interest_value = float(row_data.get('interest_repaid_derived', 0) or 0)
+                penalties_value = float(row_data.get('penalties_repaid_derived', 0) or 0)
+                principal_value = float(row_data.get('principal_repaid_derived', 0) or 0)
+                
+                if interest_value == 0 and penalties_value == 0 and principal_value == 0:
+                    self.logger.info(f"Skipping transaction with ID {source_row.get('trans_key', 'unknown')} - all values are zero")
+                    row_data["_skip_this_row"] = True
+                    self.skipped_transactions += 1
+                    return row_data
+                
+                # Map transaction types from old to new system
                 # Only process transactions with types that have a mapping
                 trans_type_mapping = {
                     1: 2,           # Repayment
@@ -698,7 +709,7 @@ class CustomLogic:
                 if trans_type_int in [3, 4] and 'loan_id' in row_data:
                     # Get interest amount from source row
                     interest_amount = float(source_row.get('trans_inst_int', 0))
-                    
+
                     # Only proceed if there's interest to apply
                     if interest_amount > 0:
                         self.logger.info(f"Creating separate apply interest transaction with amount: {interest_amount}")
@@ -712,8 +723,6 @@ class CustomLogic:
                         # For the main disbursement transaction, adjust the amount
                         # (This transaction is already being created with the current row_data)
                         row_data['amount'] = float(row_data['amount']) - interest_amount
-                        row_data['interest_repaid_derived'] = 0
-                        row_data['principal_repaid_derived'] = 0
                         
                         # Create transaction data for apply interest
                         interest_tx_data = {
@@ -905,7 +914,11 @@ class CustomLogic:
                     self.logger.debug(f"Setting transaction as debit: {row_data['amount']}")
                     row_data['debit'] = 0
                     row_data['credit'] = row_data['amount']
-                
+                    row_data['interest_repaid_derived'] = 0
+                    row_data['penalties_repaid_derived'] = 0
+                    row_data['principal_repaid_derived'] = 0
+
+
                 # Print summary after every 100 transactions
                 if (self.skipped_transactions + self.inserted_transactions) % 100 == 0:
                     summary = f"Transactions progress: {self.inserted_transactions} inserted, {self.skipped_transactions} skipped"
