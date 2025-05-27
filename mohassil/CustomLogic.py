@@ -713,6 +713,7 @@ class CustomLogic:
                         # (This transaction is already being created with the current row_data)
                         row_data['amount'] = float(row_data['amount']) - interest_amount
                         row_data['interest_repaid_derived'] = 0
+                        row_data['principal_repaid_derived'] = 0
                         
                         # Create transaction data for apply interest
                         interest_tx_data = {
