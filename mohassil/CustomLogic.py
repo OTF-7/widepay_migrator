@@ -694,6 +694,48 @@ class CustomLogic:
                 except (ValueError, TypeError):
                     self.logger.warning(f"Could not convert transaction type '{trans_type}' to integer")
                     
+                # Special handling for disbursement (3) and cancel disbursement (4)
+                if trans_type_int in [3, 4] and 'loan_id' in row_data:
+                    # Get interest amount from source row
+                    interest_amount = float(source_row.get('trans_inst_int', 0))
+                    
+                    # Only proceed if there's interest to apply
+                    if interest_amount > 0:
+                        self.logger.info(f"Creating separate apply interest transaction with amount: {interest_amount}")
+                        
+                        # Determine if this is a cancellation transaction
+                        is_cancellation = trans_type_int == 4
+                        
+                        # Calculate adjusted amount based on cancellation status
+                        adjusted_interest_amount = -interest_amount if is_cancellation else interest_amount
+                        
+                        # For the main disbursement transaction, adjust the amount
+                        # (This transaction is already being created with the current row_data)
+                        row_data['amount'] = float(row_data['amount']) - interest_amount
+                        row_data['interest_repaid_derived'] = 0
+                        
+                        # Create transaction data for apply interest
+                        interest_tx_data = {
+                            "loan_id": row_data['loan_id'],
+                            "amount": adjusted_interest_amount,
+                            "debit": adjusted_interest_amount,
+                            "loan_transaction_type_id": 11,  # Apply Interest
+                            "created_at": row_data.get('created_at', datetime.datetime.now()),
+                            "updated_at": datetime.datetime.now(),
+                            "submitted_on": row_data.get('submitted_on', datetime.datetime.now()),
+                            "branch_id": row_data.get('branch_id'),
+                            "loan_officer_id": row_data.get('loan_officer_id'),
+                            "description": "Apply Interest" if not is_cancellation else "Cancel Apply Interest",
+                            "reversed": row_data.get('reversed', False)
+                        }
+                        
+                        # Insert the apply interest transaction
+                        try:
+                            insert_record(cursor, "loan_transactions", interest_tx_data, self.logger)
+                            self.logger.info(f"Successfully created apply interest transaction for loan ID {row_data['loan_id']} with amount {adjusted_interest_amount}")
+                        except Exception as e:
+                            self.logger.error(f"Failed to create apply interest transaction: {str(e)}")
+                
                 # Create a separate transaction for penalties if penalties_repaid_derived is greater than zero
                 penalties_amount = float(row_data.get('penalties_repaid_derived', 0))
                 if penalties_amount > 0 and 'loan_id' in row_data:

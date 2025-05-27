@@ -376,7 +376,6 @@ def perform_cleanup(conn, table_name, condition=""):
     finally:
         cursor.close()
 
-
 def is_connection_alive(conn):
     """
     Check if a database connection is still alive.
