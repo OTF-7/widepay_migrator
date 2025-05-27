@@ -116,12 +116,17 @@ def settle_transactions(conn, src_conn, logger=None):
                     if logger:
                         logger.debug(f"Apply Charges: Adding penalties {amount}")
                     
-                elif tx_type == 1:  # Disbursement - set principal and interest balances
+                elif tx_type == 1:  # Disbursement - set principal balance
                     principal_balance = principal_amount
-                    interest_balance = interest_amount
-
+                    
                     if logger:
-                        logger.debug(f"Disbursement: Setting principal to {principal_amount}, interest to {interest_amount}")
+                        logger.debug(f"Disbursement: Setting principal to {principal_amount}")
+                
+                elif tx_type == 11:  # Apply Interest - set interest balance
+                    interest_balance = interest_amount
+                    
+                    if logger:
+                        logger.debug(f"Apply Interest: Setting interest to {interest_amount}")
                     
                 elif tx_type in (2, 6):  # Repayment or Write Off - decrease balances
                     # Decrease principal, interest, and penalties balances
@@ -141,7 +146,7 @@ def settle_transactions(conn, src_conn, logger=None):
                 total_balance = principal_balance + interest_balance + penalties_balance
                 
                 # Determine if we need to clear repaid values
-                clear_repaid = tx_type == 1 or tx_type == 10  # Only clear for disbursements or apply charges
+                clear_repaid = tx_type == 1 or tx_type == 10 or tx_type == 11 # Only clear for disbursements or apply charges or apply interest
                 
                 # Build the SQL parameters
                 sql_params = [principal_balance, interest_balance, penalties_balance, total_balance]
